@@ -439,6 +439,8 @@ class glm(DataClass):
             except:
                 raise KeyError('glm: ' + effect + ' is not a factor in the model')
             self.__plot_single(effect,wait)
+            plt.show()
+            plt.close()
         else:
             for fx in list(self.factors.keys()):
                 self.__plot_single(fx,wait)
@@ -464,6 +466,7 @@ class glm(DataClass):
             plt.ylabel('Marginal Effect')
             plt.title('Marginal Effect of ' + effect)
             plt.plot(x_values,y_values)
+            plt.show()
             if wait:
                 plt.waitforbuttonpress()
                 plt.close()
@@ -482,6 +485,7 @@ class glm(DataClass):
                 plt.ylabel('Marginal Effect')
                 plt.title('Marginal Effect of ' + effect)
                 plt.plot(x_values,y_values)
+                plt.show()
                 if wait:
                     plt.waitforbuttonpress()
                     plt.close()
@@ -507,6 +511,7 @@ class glm(DataClass):
                     plt.xlabel(effect + ' Value')
                     plt.ylabel('Marginal Effect')
                     plt.title('Marginal Effect of ' + effect)
+                    plt.show()
                     if wait:
                       plt.waitforbuttonpress()
                       plt.close()
@@ -527,6 +532,7 @@ class glm(DataClass):
                         plt.ylabel('Marginal Effect')
                         plt.title('Marginal Effect of ' + effect)
                         plt.plot(x_values,y_values,'o')
+                        plt.show()
                         if wait:
                             plt.waitforbuttonpress()
                             plt.close()

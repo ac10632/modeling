@@ -672,7 +672,7 @@ def decile_plot(score_variable, binary_variable, xlab='Score', ylab='Actual', ti
     sub_title += '\nconfidence: ' + str(confidence_level)
     sub_title += '\ncorrelation: ' + str(correlation)
     if not (subtitle is None):  sub_title = subtitle + '\n' + sub_title
-    plt.figtext(0.7, 0.2, sub_title, ha='left')
+    plt.figtext(0.6, 0.2, sub_title, ha='left')
     
     # Add mean of binvar and score
     rangexy = max_limit - min_limit

@@ -2,7 +2,7 @@ from distutils.core import setup
 
 setup(
     name='modeling',
-    version='1.0',
+    version='1.1',
     packages=['modeling'],
     url='',
     license='MIT',

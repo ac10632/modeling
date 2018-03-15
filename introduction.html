@@ -1,0 +1,152 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>Python Modeling Tools &#8212; modeling 1.1 documentation</title>
+    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '1.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Modeling Tools" href="glm.html" />
+    <link rel="prev" title="Welcome to modeling’s documentation!" href="index.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head>
+  <body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="python-modeling-tools">
+<h1>Python Modeling Tools<a class="headerlink" href="#python-modeling-tools" title="Permalink to this headline">¶</a></h1>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Author:</th><td class="field-body"><p class="first">William Alexander</p>
+<p class="last"><a class="reference external" href="mailto:worksprogress1&#37;&#52;&#48;gmail&#46;com">worksprogress1<span>&#64;</span>gmail<span>&#46;</span>com</a></p>
+</td>
+</tr>
+</tbody>
+</table>
+<div class="section" id="introduction">
+<h2>Introduction<a class="headerlink" href="#introduction" title="Permalink to this headline">¶</a></h2>
+<p>These tools are ones that I have found to be useful over the years.  In making the move to Python from
+SAS and R, it seemed like a good time to assemble them in a single spot.  A lot of these exist elsewhere in other
+modules available in Python.  However, there’s nothing quite like customizing what one uses everyday to suit one’s exact needs.</p>
+<p>The functionality provided in this module is:</p>
+<ul class="simple">
+<li>Fitting Generalized Linear Models (glm).</li>
+<li>Fitting Generalized Additive Models (gam).</li>
+<li>Models are specified in a syntax similar to R.</li>
+<li>The model formula can include specifications for linear splines and categorical variables.</li>
+<li>A separate class that handles the creation of the design matrix.</li>
+<li>Diagnostic plots.</li>
+</ul>
+<p>Package contents:</p>
+<ul class="simple">
+<li>module data_class:<ul>
+<li>class DataClass</li>
+<li>class DataError</li>
+<li>class ModelSpecificationError</li>
+</ul>
+</li>
+<li>module functions:<ul>
+<li>function linear_splines_basis1</li>
+<li>function linear_splines_basis2</li>
+<li>function categorical_to_design</li>
+<li>function ks_calculate</li>
+<li>function decile_plot</li>
+</ul>
+</li>
+<li>module glm: class glm</li>
+<li>module gam: class gam</li>
+</ul>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name" colspan="2">Example Imports:</th></tr>
+<tr class="field-odd field"><td>&#160;</td><td class="field-body"><ul class="first last simple">
+<li>from modeling_tools.functions import decile_plot</li>
+<li>from modeling_tools.data_class import DataClass</li>
+<li>from modeling_tools.glm import glm</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<p>The code is available <a class="reference external" href="https://github.com/worksprogress1/modeling_tools">here</a>.</p>
+<p>It may be installed via pip.  For example, on Ubuntu:</p>
+<p>sudo pip3 install git+https://git&#64;github.com/worksprogress1/modeling_tools</p>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper"><div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="index.html" title="previous chapter">Welcome to modeling’s documentation!</a></li>
+      <li>Next: <a href="glm.html" title="next chapter">Modeling Tools</a></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2018, Will Alexander.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.6.7</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
+      
+      |
+      <a href="_sources/introduction.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

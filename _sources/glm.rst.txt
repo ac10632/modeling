@@ -1,22 +1,22 @@
 Modeling Tools
 ==============
 
-.. automodule:: gam
+.. automodule:: modeling.gam
     :members:
     :undoc-members:
     :show-inheritance:
        
-.. automodule:: glm
+.. automodule:: modeling.glm
     :members:
     :undoc-members:
     :show-inheritance:
        
-.. automodule:: data_class
+.. automodule:: modeling.data_class
     :members:
     :undoc-members:
     :show-inheritance:
 		
-.. automodule:: functions
+.. automodule:: modeling.functions
     :members:
     :undoc-members:
     :show-inheritance:

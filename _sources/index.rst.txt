@@ -10,6 +10,8 @@ Welcome to modeling's documentation!
    :maxdepth: 2
    :caption: Contents:
 
+   introduction.rst	       
+   glm.rst
 
 
 Indices and tables

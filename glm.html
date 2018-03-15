@@ -1,0 +1,1208 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>Modeling Tools &#8212; modeling 1.1 documentation</title>
+    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '1.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="prev" title="Python Modeling Tools" href="introduction.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head>
+  <body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="module-modeling.gam">
+<span id="modeling-tools"></span><h1>Modeling Tools<a class="headerlink" href="#module-modeling.gam" title="Permalink to this headline">¶</a></h1>
+<dl class="class">
+<dt id="modeling.gam.gam">
+<em class="property">class </em><code class="descclassname">modeling.gam.</code><code class="descname">gam</code><span class="sig-paren">(</span><em>formula</em>, <em>df</em>, <em>family</em>, <em>wts=None</em>, <em>event=None</em>, <em>restrictions=None</em><span class="sig-paren">)</span><a class="headerlink" href="#modeling.gam.gam" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#modeling.glm.glm" title="modeling.glm.glm"><code class="xref py py-class docutils literal"><span class="pre">modeling.glm.glm</span></code></a></p>
+<p>Fits a Generalized Additive Model (gam).  gam inherits from glm.</p>
+<p>gam offers no methods or attributes not available in glm.  What it offers is an additional type of term
+within the model <em>formula</em>.</p>
+<p>The new type of term specifies that the effect is to be fit using a flexible functional
+form–smoothing splines.  The splines used by gam are <code class="xref py py-meth docutils literal"><span class="pre">linear_splines_basis2()</span></code>.</p>
+<p>The syntax for each gam term in the <em>formula</em> is</p>
+<blockquote>
+<div><p><em>s</em> (<em>x</em>)</p>
+<p>or</p>
+<p><em>s</em> (<em>x</em>, <em>k</em>, <em>num_turn</em>)</p>
+</div></blockquote>
+<ul class="simple">
+<li><em>x</em>. <em>x</em> is the name of the variable from the input DataFrame.</li>
+<li><em>k</em>.   <em>k</em> is a value from 3 to 100 that controls the number of knot points.
+A value of <em>k</em> produces <em>k</em> knot points.  The points are based on the quantiles of <em>x</em>. The default
+value of <em>k</em> is 10 and <em>num_turn</em> is 5.</li>
+<li><em>num_turn</em>. <em>num_turn</em> is the maximum number of turns (maxima/minima) permitted in the smoothed function.
+The default value of <em>num_turn</em> is 5.</li>
+</ul>
+<p>The smoothing spline algorithm is characterized as ridge regression where the ridge parameter is applied to
+all terms (basis functions) except the intercept and global linear term.  Each term receives its own ridge
+parameter. The algorithm estimates the ridge parameters via a random holdout.</p>
+<p>The estimation approach is:</p>
+<ul class="simple">
+<li>Estimate the ridge parameters using the backfitting algorithm.</li>
+<li>Re-estimate the model as a glm model using the ridge parameters that come out of the backfit.  Since, given the
+ridge parameters, the splines are linear in parameters the model reduces to a glm model.</li>
+<li>For the Binomial family, the backfitting algorithm is nested within the IRWLS algorithm.</li>
+</ul>
+<p>Note: if there are no gam terms, it is more efficient to use glm.</p>
+<p>For the smoothing spline algorithm, see</p>
+<blockquote>
+<div><a class="reference external" href="https://www.whitman.edu/Documents/Academics/Mathematics/Griggs.pdf">https://www.whitman.edu/Documents/Academics/Mathematics/Griggs.pdf</a> section 6.1</div></blockquote>
+<p>For the backfitting algorithm, see</p>
+<blockquote>
+<div><a class="reference external" href="http://www.d.umn.edu/math/Technical%20Reports/Technical%20Reports%202007-/TR%202007-2008/TR_2008_8.pdf">http://www.d.umn.edu/math/Technical%20Reports/Technical%20Reports%202007-/TR%202007-2008/TR_2008_8.pdf</a></div></blockquote>
+</dd></dl>
+
+<span class="target" id="module-modeling.glm"></span><dl class="class">
+<dt id="modeling.glm.glm">
+<em class="property">class </em><code class="descclassname">modeling.glm.</code><code class="descname">glm</code><span class="sig-paren">(</span><em>formula</em>, <em>df</em>, <em>family</em>, <em>wts=None</em>, <em>event=None</em>, <em>restrictions=None</em>, <em>ridge=None</em>, <em>fit=True</em><span class="sig-paren">)</span><a class="headerlink" href="#modeling.glm.glm" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#modeling.data_class.DataClass" title="modeling.data_class.DataClass"><code class="xref py py-class docutils literal"><span class="pre">modeling.data_class.DataClass</span></code></a></p>
+<p>This class fits a Generalized Linear Model.  This class inherits from DataClass.</p>
+<p>The call is:</p>
+<p>Example Usage:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">glm</span><span class="p">(</span><span class="n">formula</span><span class="p">,</span> <span class="n">df</span><span class="p">,</span> <span class="n">family</span><span class="p">,</span> <span class="n">wts</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">event</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">restriction</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">ridge</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">fit</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</pre></div>
+</div>
+<ul class="simple">
+<li>df. The pandas DataFrame with the data to use in the model fit.</li>
+</ul>
+<p>These parameters are documented separately:</p>
+<ul class="simple">
+<li>formula. The model to fit.</li>
+<li>family. The regression family dictating the model type.</li>
+<li>wts. Optional regression weights (Normal family only).</li>
+<li>event. Optional specification of the event to model for logistic regression.</li>
+<li>restrictions. Optional restrictions on the coefficients.</li>
+<li>ridge. Optional ridge parameters for ridge regression.</li>
+</ul>
+<p>Finally,</p>
+<ul class="simple">
+<li>fit. Optional.  If False, the model is not fit.  Mostly for use by gam.</li>
+</ul>
+<p>Example:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">g</span> <span class="o">=</span> <span class="n">glm</span><span class="p">(</span><span class="s1">&#39;default ~ credit + h(ltv,(40,70,90,130),0)&#39;</span><span class="p">,</span> <span class="n">myData</span><span class="p">,</span> <span class="n">family</span><span class="o">=</span><span class="s1">&#39;binomial&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p><strong>Methods</strong></p>
+<ul class="simple">
+<li><a class="reference internal" href="#modeling.glm.glm.implement" title="modeling.glm.glm.implement"><code class="xref py py-meth docutils literal"><span class="pre">implement()</span></code></a></li>
+<li><a class="reference internal" href="#modeling.glm.glm.plot_effects" title="modeling.glm.glm.plot_effects"><code class="xref py py-meth docutils literal"><span class="pre">plot_effects()</span></code></a></li>
+<li><a class="reference internal" href="#modeling.glm.glm.predict" title="modeling.glm.glm.predict"><code class="xref py py-meth docutils literal"><span class="pre">predict()</span></code></a></li>
+</ul>
+<p><strong>Attributes</strong></p>
+<ul class="simple">
+<li><a class="reference internal" href="#modeling.glm.glm.condition_index" title="modeling.glm.glm.condition_index"><code class="xref py py-meth docutils literal"><span class="pre">condition_index()</span></code></a></li>
+<li><code class="xref py py-meth docutils literal"><span class="pre">event()</span></code></li>
+<li><code class="xref py py-meth docutils literal"><span class="pre">factors()</span></code></li>
+<li><code class="xref py py-meth docutils literal"><span class="pre">family()</span></code></li>
+<li><a class="reference internal" href="#modeling.glm.glm.fitted" title="modeling.glm.glm.fitted"><code class="xref py py-meth docutils literal"><span class="pre">fitted()</span></code></a></li>
+<li><code class="xref py py-meth docutils literal"><span class="pre">formula()</span></code></li>
+<li><code class="xref py py-meth docutils literal"><span class="pre">has_intercept()</span></code></li>
+<li><code class="xref py py-meth docutils literal"><span class="pre">implementation_skeleton()</span></code></li>
+<li><a class="reference internal" href="#modeling.glm.glm.ks" title="modeling.glm.glm.ks"><code class="xref py py-meth docutils literal"><span class="pre">ks()</span></code></a></li>
+<li><a class="reference internal" href="#modeling.glm.glm.leverage" title="modeling.glm.glm.leverage"><code class="xref py py-meth docutils literal"><span class="pre">leverage()</span></code></a></li>
+<li><code class="xref py py-meth docutils literal"><span class="pre">model_degrees_freedom()</span></code></li>
+<li><a class="reference internal" href="#modeling.glm.glm.model_significance" title="modeling.glm.glm.model_significance"><code class="xref py py-meth docutils literal"><span class="pre">model_significance()</span></code></a></li>
+<li><a class="reference internal" href="#modeling.glm.glm.mse" title="modeling.glm.glm.mse"><code class="xref py py-meth docutils literal"><span class="pre">mse()</span></code></a></li>
+<li><code class="xref py py-meth docutils literal"><span class="pre">n()</span></code></li>
+<li><code class="xref py py-meth docutils literal"><span class="pre">p()</span></code></li>
+<li><a class="reference internal" href="#modeling.glm.glm.parameters" title="modeling.glm.glm.parameters"><code class="xref py py-meth docutils literal"><span class="pre">parameters()</span></code></a></li>
+<li><a class="reference internal" href="#modeling.glm.glm.r_square" title="modeling.glm.glm.r_square"><code class="xref py py-meth docutils literal"><span class="pre">r_square()</span></code></a></li>
+<li><a class="reference internal" href="#modeling.glm.glm.restrictions" title="modeling.glm.glm.restrictions"><code class="xref py py-meth docutils literal"><span class="pre">restrictions()</span></code></a></li>
+<li><a class="reference internal" href="#modeling.glm.glm.ridge" title="modeling.glm.glm.ridge"><code class="xref py py-meth docutils literal"><span class="pre">ridge()</span></code></a></li>
+<li><a class="reference internal" href="#modeling.glm.glm.sse" title="modeling.glm.glm.sse"><code class="xref py py-meth docutils literal"><span class="pre">sse()</span></code></a></li>
+<li><a class="reference internal" href="#modeling.glm.glm.t_table" title="modeling.glm.glm.t_table"><code class="xref py py-meth docutils literal"><span class="pre">t_table()</span></code></a></li>
+<li><a class="reference internal" href="#modeling.glm.glm.total_sum_of_squares" title="modeling.glm.glm.total_sum_of_squares"><code class="xref py py-meth docutils literal"><span class="pre">total_sum_of_squares()</span></code></a></li>
+<li><code class="xref py py-meth docutils literal"><span class="pre">wts()</span></code></li>
+<li><code class="xref py py-meth docutils literal"><span class="pre">x()</span></code></li>
+<li><code class="xref py py-meth docutils literal"><span class="pre">x_column_names()</span></code></li>
+<li><code class="xref py py-meth docutils literal"><span class="pre">y()</span></code></li>
+</ul>
+<dl class="attribute">
+<dt id="modeling.glm.glm.condition_index">
+<code class="descname">condition_index</code><a class="headerlink" href="#modeling.glm.glm.condition_index" title="Permalink to this definition">¶</a></dt>
+<dd><p>Condition index.  This is a measure of collinearity within the design matrix.</p>
+<p>For logistic regression, this is based on the last iteration of the IRWLS algorithm.
+The condition index is</p>
+<p>sqrt(max eigenvalue/min eigenvalue) of X’X</p>
+<p>Values above 30 are a concern.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">condition index</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">float</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="modeling.glm.glm.fitted">
+<code class="descname">fitted</code><a class="headerlink" href="#modeling.glm.glm.fitted" title="Permalink to this definition">¶</a></dt>
+<dd><p>Fitted values.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">fitted values from the regression</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">numpy vector (<em>n</em> by 1)</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="modeling.glm.glm.implement">
+<code class="descname">implement</code><span class="sig-paren">(</span><em>file_name</em>, <em>function_name='model'</em>, <em>indent_level=0</em><span class="sig-paren">)</span><a class="headerlink" href="#modeling.glm.glm.implement" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>file_name</strong> (<em>str</em>) – file to create for the implementation</li>
+<li><strong>function_name</strong> (<em>str</em>) – name to call the function being implemented</li>
+<li><strong>indent_level</strong> (<em>int</em>) – how much to indent the code at the ‘def’ level</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">None</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="modeling.glm.glm.ks">
+<code class="descname">ks</code><a class="headerlink" href="#modeling.glm.glm.ks" title="Permalink to this definition">¶</a></dt>
+<dd><p>Kolmogorov-Smirnov statistic.</p>
+<p>Note. Only applies to family Binomial.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">KS statistic</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">float</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="modeling.glm.glm.leverage">
+<code class="descname">leverage</code><a class="headerlink" href="#modeling.glm.glm.leverage" title="Permalink to this definition">¶</a></dt>
+<dd><p>Leverage points.</p>
+<p>For logistic regression, this is based on the last iteration of the IRWLS algorithm.  This is available
+only if <em>n</em> &lt;= 1000.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">row numbers in <em>df</em> that are deemed to be of higher leverage.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">numpy array</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="modeling.glm.glm.model_significance">
+<code class="descname">model_significance</code><a class="headerlink" href="#modeling.glm.glm.model_significance" title="Permalink to this definition">¶</a></dt>
+<dd><p>Model significance statistic.  The return depends on the family:</p>
+<ul class="simple">
+<li>Normal family. The return is the F-statistic.</li>
+<li>Binomial family. The return is the chi-square statistic based on the likelihood ratio.</li>
+</ul>
+<p>The statistics are given only if the model has an intercept.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">statistic, degrees of freedom, p-value.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">tuple</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="modeling.glm.glm.mse">
+<code class="descname">mse</code><a class="headerlink" href="#modeling.glm.glm.mse" title="Permalink to this definition">¶</a></dt>
+<dd><p>Mean squared error from regression fit.</p>
+<p>Only returned for family Normal.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">mean squared error</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">float</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="modeling.glm.glm.parameters">
+<code class="descname">parameters</code><a class="headerlink" href="#modeling.glm.glm.parameters" title="Permalink to this definition">¶</a></dt>
+<dd><p>Regression parameters</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">regression parameters</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">pandas Series</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="modeling.glm.glm.plot_effects">
+<code class="descname">plot_effects</code><span class="sig-paren">(</span><em>effect=None</em>, <em>wait=True</em><span class="sig-paren">)</span><a class="headerlink" href="#modeling.glm.glm.plot_effects" title="Permalink to this definition">¶</a></dt>
+<dd><p>Plots the marginal effect of a factor in the model.
+If <em>effect</em> is not specified, each factor is plotted.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>effect</strong> (<em>str</em>) – A single effect to plot.  If omitted, all effects are plotted.</li>
+<li><strong>wait</strong> (<em>bool</em>) – if True, then waits for a keypress after the plot</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">plot</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">matplotlib plot</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="modeling.glm.glm.predict">
+<code class="descname">predict</code><span class="sig-paren">(</span><em>dfnew</em><span class="sig-paren">)</span><a class="headerlink" href="#modeling.glm.glm.predict" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generates the predicted values of the fit model on a new DataFrame.</p>
+<p>The DataFrame of new data, <em>dfnew</em>, must have the columns required to run the model (<em>i.e.</em> the independent variables).</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>dfnew</strong> (<em>pandas DataFrame</em>) – new data to run the model on.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">model output on the new data.</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">numpy column vector.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="modeling.glm.glm.r_square">
+<code class="descname">r_square</code><a class="headerlink" href="#modeling.glm.glm.r_square" title="Permalink to this definition">¶</a></dt>
+<dd><p>R-Squared.</p>
+<p>Only given if the model has an intercept and family Normal.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">R-squared for the regression.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">float</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="modeling.glm.glm.restrictions">
+<code class="descname">restrictions</code><a class="headerlink" href="#modeling.glm.glm.restrictions" title="Permalink to this definition">¶</a></dt>
+<dd><p>The user may specify linear restrictions on the coefficients.</p>
+<p>Each restriction is specified as a str.  The format is:</p>
+<blockquote>
+<div>‘<em>a1</em> * <em>x1</em> + <em>a2</em> * <em>x2</em> + … + <em>xk</em> * <em>xk</em> = <em>c</em>’</div></blockquote>
+<p>where</p>
+<blockquote>
+<div><ul class="simple">
+<li><em>a1</em>, <em>a2</em> are constants</li>
+<li><em>x1</em>, <em>x2</em> are names of parameters in the model</li>
+<li><em>c</em> is a constant</li>
+</ul>
+</div></blockquote>
+<p>Multiple restrictions are put into a list.  If the restrictions refer to effects that are derived–that is
+use <em>c()</em>, <em>h()</em> or <em>l()</em> syntax, the effect name is the derived name as shown in t_table or parameters
+attributes.</p>
+<dl class="docutils">
+<dt>Example Usage</dt>
+<dd><div class="first last highlight-default"><div class="highlight"><pre><span></span><span class="n">r</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;3*temperature - 4.2*pressure = 0&#39;</span><span class="p">,</span><span class="s1">&#39;meaning = 42&#39;</span><span class="p">]</span>
+</pre></div>
+</div>
+</dd>
+</dl>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">user-specified restrictions on the coefficients</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">list of str</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="modeling.glm.glm.ridge">
+<code class="descname">ridge</code><a class="headerlink" href="#modeling.glm.glm.ridge" title="Permalink to this definition">¶</a></dt>
+<dd><p>Parameters for ridge regression.  Size of array is <em>p</em>.  The values correspond  to the effects in the
+model in the same order as they appear in the user formula, which is the same order as the attribute
+t_table. If ridge has been specified, the values are returned as part of t_table.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">ridge parameters specified by user</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">numpy array</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="modeling.glm.glm.sse">
+<code class="descname">sse</code><a class="headerlink" href="#modeling.glm.glm.sse" title="Permalink to this definition">¶</a></dt>
+<dd><p>Sum of squared error from regression fit.</p>
+<p>Only returned for family Normal.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">sum of squared error</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">float</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="modeling.glm.glm.t_table">
+<code class="descname">t_table</code><a class="headerlink" href="#modeling.glm.glm.t_table" title="Permalink to this definition">¶</a></dt>
+<dd><p>Table consisting of:</p>
+<ul class="simple">
+<li>regression coefficients</li>
+<li>standard errors</li>
+<li>t-statistics</li>
+<li>p-values</li>
+<li>ridge parameters, if these have been specified</li>
+</ul>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">table</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">pandas DataFrame</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="modeling.glm.glm.total_sum_of_squares">
+<code class="descname">total_sum_of_squares</code><a class="headerlink" href="#modeling.glm.glm.total_sum_of_squares" title="Permalink to this definition">¶</a></dt>
+<dd><p>Total sum of squares.</p>
+<p>Only returned for family Normal.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">total sum of squares</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">float</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+<span class="target" id="module-modeling.data_class"></span><dl class="class">
+<dt id="modeling.data_class.DataClass">
+<em class="property">class </em><code class="descclassname">modeling.data_class.</code><code class="descname">DataClass</code><span class="sig-paren">(</span><em>df</em><span class="sig-paren">)</span><a class="headerlink" href="#modeling.data_class.DataClass" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">object</span></code></p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>df</strong> (<em>pandas DataFrame</em>) – data from which to form the design matrix, dependent variable vector.</td>
+</tr>
+</tbody>
+</table>
+<p>The DataClass handles creating the design matrix and the dependent variable vector based
+on an R-type formula.</p>
+<p>DataClass supports these special features in the <em>formula</em>:</p>
+<ul>
+<li><p class="first">linear splines - basis 1 (hats).  The format:</p>
+<blockquote>
+<div><dl class="function">
+<dt id="modeling.data_class.DataClass.h">
+<code class="descname">h</code><span class="sig-paren">(</span><em>var</em>, <em>knots</em>, <em>omit = None</em><span class="sig-paren">)</span><a class="headerlink" href="#modeling.data_class.DataClass.h" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<ul class="simple">
+<li><em>var</em>: the name of the variable to form hats from.</li>
+<li><em>knots</em>: a <em>tuple</em> of knot points</li>
+<li><em>omit</em>: the (optional) basis function to omit from the design matrix.  Basis functions
+are numbered starting with 0.</li>
+<li>See <code class="xref py py-meth docutils literal"><span class="pre">functions.linear_splines_basis1()</span></code>  for details of the basis functions.</li>
+</ul>
+</div></blockquote>
+</li>
+<li><p class="first">linear splines - basis 2.  The format:</p>
+<blockquote>
+<div><dl class="function">
+<dt id="modeling.data_class.DataClass.l">
+<code class="descname">l</code><span class="sig-paren">(</span><em>var</em>, <em>knots</em><span class="sig-paren">)</span><a class="headerlink" href="#modeling.data_class.DataClass.l" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<ul class="simple">
+<li><em>var</em>: the name of the variable to form hats from.</li>
+<li><em>knots</em>: a <em>tuple</em> of knot points.</li>
+<li>These basis functions automatically drop the constant term.</li>
+<li>See <code class="xref py py-meth docutils literal"><span class="pre">functions.linear_splines_basis2()</span></code> for details of the basis functions.</li>
+</ul>
+</div></blockquote>
+</li>
+<li><p class="first">categorical variables.  The format for creating a set of indicator variables in the
+design matrix for a categorical variable is:</p>
+<blockquote>
+<div><dl class="function">
+<dt id="modeling.data_class.DataClass.c">
+<code class="descname">c</code><span class="sig-paren">(</span><em>var</em>, <em>omit = None</em><span class="sig-paren">)</span><a class="headerlink" href="#modeling.data_class.DataClass.c" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<ul class="simple">
+<li><em>var</em>: the name of the variable in the DataFrame df to form the indicators from.</li>
+<li><em>omit</em>: the (optional) value of <em>var</em> to omit from the indicators to avoid
+collinearity with the intercept term in the model.</li>
+</ul>
+</div></blockquote>
+</li>
+</ul>
+<p>Example usage:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">modeling_tools.data_class</span> <span class="k">import</span> <span class="n">DataClass</span>
+<span class="n">n</span> <span class="o">=</span> <span class="mi">30000</span>
+<span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="mi">6</span><span class="p">)),</span> <span class="n">columns</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;x1&#39;</span><span class="p">,</span> <span class="s1">&#39;x2&#39;</span><span class="p">,</span> <span class="s1">&#39;x3&#39;</span><span class="p">,</span> <span class="s1">&#39;x4&#39;</span><span class="p">,</span> <span class="s1">&#39;x5&#39;</span><span class="p">,</span> <span class="s1">&#39;x 6&#39;</span><span class="p">])</span>
+<span class="n">df</span><span class="p">[</span><span class="s1">&#39;yr&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="mi">2000</span><span class="p">,</span> <span class="mi">2017</span><span class="p">,</span> <span class="n">n</span><span class="p">)</span>
+<span class="n">y</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span> <span class="o">+</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">df</span><span class="p">[</span><span class="s1">&#39;x1&#39;</span><span class="p">]</span> <span class="o">-</span> <span class="mi">3</span> <span class="o">*</span> <span class="n">df</span><span class="p">[</span><span class="s1">&#39;x2&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="mf">1.5</span><span class="o">*</span><span class="n">df</span><span class="p">[</span><span class="s1">&#39;x3&#39;</span><span class="p">]</span> <span class="o">-</span> <span class="o">.</span><span class="mi">1</span><span class="o">*</span><span class="n">df</span><span class="p">[</span><span class="s1">&#39;x4&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="mf">7.7</span><span class="o">*</span><span class="n">df</span><span class="p">[</span><span class="s1">&#39;x5&#39;</span><span class="p">]</span>
+<span class="n">df</span><span class="p">[</span><span class="s1">&#39;ycts&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">y</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">n</span><span class="p">)</span>
+<span class="n">design</span> <span class="o">=</span> <span class="n">DataClass</span><span class="p">(</span><span class="n">df</span><span class="p">)</span>
+<span class="c1"># Note variable names with internal spaces are OK.</span>
+<span class="n">design</span><span class="o">.</span><span class="n">formula</span> <span class="o">=</span> <span class="s1">&#39;ycts~ x1 + x2 + x3 + x4 + x5 + x 6&#39;</span>
+<span class="n">design</span><span class="o">.</span><span class="n">build_design</span><span class="p">()</span>
+<span class="nb">print</span> <span class="p">(</span><span class="s1">&#39;There are this many observations &#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">design</span><span class="o">.</span><span class="n">n</span><span class="p">))</span>
+<span class="nb">print</span> <span class="p">(</span><span class="s1">&#39;There are this many parameters &#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">design</span><span class="o">.</span><span class="n">p</span><span class="p">))</span>
+</pre></div>
+</div>
+<dl class="method">
+<dt id="modeling.data_class.DataClass.build_design">
+<code class="descname">build_design</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#modeling.data_class.DataClass.build_design" title="Permalink to this definition">¶</a></dt>
+<dd><p>Creates the design matrix and the dependent-variable vector.</p>
+<p>Populates these properties:</p>
+<ul class="simple">
+<li>x</li>
+<li>y</li>
+<li>x_column_names</li>
+<li>has_intercept</li>
+<li>implementation_skeleton</li>
+</ul>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Note:</th><td class="field-body">must set formula before calling build_design()</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">There is no direct return</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">N/A</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="modeling.data_class.DataClass.event">
+<code class="descname">event</code><a class="headerlink" href="#modeling.data_class.DataClass.event" title="Permalink to this definition">¶</a></dt>
+<dd><p>Logistic regression assumes that the response variable is binary 0/1 and that the modeled event is 1.</p>
+<p>The user may override this by specifying the event to be modeled.  In this way:</p>
+<ul class="simple">
+<li>Any two-valued outcome (even strings) can be readily modeled without preprocessing.</li>
+<li>If the data is already binary, the event 0 can be modeled.</li>
+</ul>
+<p>Returns <em>None</em> for Normal family or if unset by the user.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>value</strong> (<em>int</em><em>, </em><em>str</em><em>, </em><em>.. same type as the dependent variable.</em>) – The value of the dependent variable to be modeled as the ‘event’ in logistic regression</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">the value set by the user or <em>None</em> if unset.</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">same type as dependent variable.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="modeling.data_class.DataClass.factors">
+<code class="descname">factors</code><a class="headerlink" href="#modeling.data_class.DataClass.factors" title="Permalink to this definition">¶</a></dt>
+<dd><p>Dictionary of factors in the model.  The keys are the variable names.  Each entry is also a dictionary with
+these elements:</p>
+<blockquote>
+<div><ul>
+<li><p class="first">type.  This is the type of the factor.</p>
+<blockquote>
+<div><ul class="simple">
+<li>DIRECT.  The factor is in the model as-is (e.g. X1) without transformation (splines) or as a category.</li>
+<li>SPLINES: HATS. The factor is in the model using linear splines basis 1.</li>
+<li>SPLINES: LINEAR. The factor is in the model using linear splines basis 2.</li>
+<li>CATEGORICAL. The factor is in the model as categorical.</li>
+</ul>
+</div></blockquote>
+</li>
+<li><p class="first">knots.  numpy array of knots for splines</p>
+</li>
+<li><p class="first">levels. For categorical variables, numpy array of levels of the variable.</p>
+</li>
+<li><p class="first">omit. For splines basis 1, the basis function to drop.  For categorical variables, the level to omit.
+A value of None is permitted.</p>
+</li>
+</ul>
+</div></blockquote>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">dictionary of factors</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">dict</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="modeling.data_class.DataClass.family">
+<code class="descname">family</code><a class="headerlink" href="#modeling.data_class.DataClass.family" title="Permalink to this definition">¶</a></dt>
+<dd><p>Regression distribution family.  The options are:</p>
+<ul class="simple">
+<li>Normal.  This is standard linear regression. The dependent variable is normally distributed.</li>
+<li>Binomial. This is logistic regression.  The dependent variable is binary.</li>
+</ul>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">distributional family to be used in the regression.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">str</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="modeling.data_class.DataClass.formula">
+<code class="descname">formula</code><a class="headerlink" href="#modeling.data_class.DataClass.formula" title="Permalink to this definition">¶</a></dt>
+<dd><p>Regression formula use to create design matrix and dependent variable vector.</p>
+<dl class="docutils">
+<dt>The formula has the form:</dt>
+<dd>&lt;dependent variable&gt; ~ &lt;independent variable&gt;_1+…+&lt;independent variable&gt;_k</dd>
+</dl>
+<p>Special cases:</p>
+<ul>
+<li><p class="first">Start with ‘-1’ to omit the intercept from the model.</p>
+</li>
+<li><dl class="function">
+<dt>
+<code class="descname">c</code><span class="sig-paren">(</span><em>x_i</em>, <em>omit=None</em><span class="sig-paren">)</span></dt>
+<dd><p>treats <em>x_i</em> as a class variable.  <em>omit</em> is the optional value of x_i to omit from the
+design matrix.</p>
+</dd></dl>
+
+</li>
+<li><dl class="function">
+<dt>
+<code class="descname">h</code><span class="sig-paren">(</span><em>x_i</em>, <em>knots</em>, <em>omit=None</em><span class="sig-paren">)</span></dt>
+<dd><p>creates a set of linear splines based on <em>x_i</em>.  The knots used are specified in the tuple
+<em>knots</em>. The number of basis functions is equal to the number of knots. <em>omit</em> is the
+optional basis function to omit.  The basis functions are numbered starting with 0.</p>
+</dd></dl>
+
+</li>
+<li><dl class="function">
+<dt>
+<code class="descname">l</code><span class="sig-paren">(</span><em>x_i</em>, <em>knots</em><span class="sig-paren">)</span></dt>
+<dd><p>creates a set of linear splines based on <em>x_i</em>.  The knots used are specified in the tuple
+<em>knots</em>. The number of basis functions is equal to the number of knots. There is no option to
+omit a basis function.  The constant term is automatically dropped.</p>
+</dd></dl>
+
+</li>
+</ul>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Example:</th><td class="field-body"></td>
+</tr>
+</tbody>
+</table>
+<p><em>size ~ height + weight</em> fits a model of <em>size</em> to the factors <em>height</em> and <em>weight</em>.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Example:</th><td class="field-body"></td>
+</tr>
+</tbody>
+</table>
+<dl class="function">
+<dt>
+<code class="descname">c</code><span class="sig-paren">(</span><em>state</em>, <em>'NY'</em><span class="sig-paren">)</span></dt>
+<dd><p>creates a set of indicator values, one for each level of state.  The indicator corresponding
+to NY is omitted from the return DataFrame. Assuming state has 50 levels, the return DataFrame
+has 49 columns.  Their names are <em>state:AK</em>, <em>state:AL</em>, and so on.</p>
+</dd></dl>
+
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Example:</th><td class="field-body"></td>
+</tr>
+</tbody>
+</table>
+<dl class="function">
+<dt>
+<code class="descname">h</code><span class="sig-paren">(</span><em>height</em>, <em>(48</em>, <em>60</em>, <em>66</em>, <em>72</em>, <em>78)</em>, <em>0</em><span class="sig-paren">)</span></dt>
+<dd></dd></dl>
+
+<p>calculates linear spline basis 1 functions
+from the knot points 48, 60, 66, 72, 78.  The first basis function (0) is omitted.  The return
+DataFrame will have 4 columns.  Their names are: height1, height2, height3 and height4.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>value</strong> (<em>str</em>) – regression formula</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">formula specified by the user</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">str</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="modeling.data_class.DataClass.has_intercept">
+<code class="descname">has_intercept</code><a class="headerlink" href="#modeling.data_class.DataClass.has_intercept" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">whether the model has an intercept</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">bool</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="modeling.data_class.DataClass.implementation_skeleton">
+<code class="descname">implementation_skeleton</code><a class="headerlink" href="#modeling.data_class.DataClass.implementation_skeleton" title="Permalink to this definition">¶</a></dt>
+<dd><p>This list is a skeleton of an implementation of the model.  It is a list of lists. Each
+element of the list has the form:</p>
+<p>[<em>Python statement</em>, <em>parameter</em>]</p>
+<p>where <em>python statement</em> is a stub of a python statement associated with <em>parameter</em>.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Example:</th><td class="field-body">[‘<em>fn = fn + x1</em>’,’x1’]. So one only needs to add the value of the parameter
+on <em>x1</em> to complete the Python statement.</td>
+</tr>
+</tbody>
+</table>
+<p>Statements which don’t need a parameter added to the end have <em>None</em>
+as the second entry.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">implement elements</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">list</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="modeling.data_class.DataClass.model_degrees_freedom">
+<code class="descname">model_degrees_freedom</code><a class="headerlink" href="#modeling.data_class.DataClass.model_degrees_freedom" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the degrees of freedom in the model if build_design() has been run.
+Otherwise <em>None</em> is returned.</p>
+<p>This is <em>n</em> - <em>p</em>.</p>
+<p>Note: cannot be set.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">number of columns in the design matrix.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">int</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="modeling.data_class.DataClass.n">
+<code class="descname">n</code><a class="headerlink" href="#modeling.data_class.DataClass.n" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the number of rows in the design matrix if build_design() has been run.
+Otherwise <em>None</em> is returned.</p>
+<p>Note: cannot be set.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">number of rows in the design matrix.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">int</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="modeling.data_class.DataClass.p">
+<code class="descname">p</code><a class="headerlink" href="#modeling.data_class.DataClass.p" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the number of columns in the design matrix if build_design() has been run.
+Otherwise <em>None</em> is returned.</p>
+<p>This is the number of parameters to be estimated.</p>
+<p>Note: cannot be set.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">number of columns in the design matrix.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">int</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="modeling.data_class.DataClass.wts">
+<code class="descname">wts</code><a class="headerlink" href="#modeling.data_class.DataClass.wts" title="Permalink to this definition">¶</a></dt>
+<dd><p>Weights to use in the regression. Weights are optional and are permitted only for the Normal family.</p>
+<p>Requirements:</p>
+<ul class="simple">
+<li>There must be <em>n</em> elements in the wts array.</li>
+<li>Weights must be non-negative.</li>
+</ul>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>value</strong> (<em>str</em><em> (</em><em>column in df</em><em>)</em><em>, </em><em>numpy array</em><em>, </em><em>numpy vector</em>) – wts to use in the regression</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">regression weights</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">numpy vector</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="modeling.data_class.DataClass.x">
+<code class="descname">x</code><a class="headerlink" href="#modeling.data_class.DataClass.x" title="Permalink to this definition">¶</a></dt>
+<dd><p>The design matrix built upon the input DataFrame according to the formula.</p>
+<p>The matrix <em>x</em> is created by a call to build_design()</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">design matrix</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">numpy matrix</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="modeling.data_class.DataClass.x_column_names">
+<code class="descname">x_column_names</code><a class="headerlink" href="#modeling.data_class.DataClass.x_column_names" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">names of the columns in the design matrix</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">pandas index numpy array</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="modeling.data_class.DataClass.y">
+<code class="descname">y</code><a class="headerlink" href="#modeling.data_class.DataClass.y" title="Permalink to this definition">¶</a></dt>
+<dd><p>The vector of the dependent variable built upon the input DataFrame
+as specified by the formula.</p>
+<p>Note: for logistic regression <em>y</em> is set up as binary and the value modeled is 1.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">dependent variable</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">numpy vector</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="exception">
+<dt id="modeling.data_class.DataError">
+<em class="property">exception </em><code class="descclassname">modeling.data_class.</code><code class="descname">DataError</code><a class="headerlink" href="#modeling.data_class.DataError" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">Exception</span></code></p>
+<p>Raised if there’s a problem in the data</p>
+</dd></dl>
+
+<dl class="exception">
+<dt id="modeling.data_class.ModelError">
+<em class="property">exception </em><code class="descclassname">modeling.data_class.</code><code class="descname">ModelError</code><a class="headerlink" href="#modeling.data_class.ModelError" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">Exception</span></code></p>
+<p>Raised if there’s a problem in the model build</p>
+</dd></dl>
+
+<span class="target" id="module-modeling.functions"></span><dl class="function">
+<dt id="modeling.functions.categorical_to_design">
+<code class="descclassname">modeling.functions.</code><code class="descname">categorical_to_design</code><span class="sig-paren">(</span><em>cat_var</em>, <em>omit=None</em><span class="sig-paren">)</span><a class="headerlink" href="#modeling.functions.categorical_to_design" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create the design matrix of indicator variables from an input categorical variable.
+if omit == None, then each distinct value of cat_var will receive a column in the return.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>cat_var</strong> (<em>pandas series: can be of any type.</em>) – categorical variable that forms the basis of design matrix</li>
+<li><strong>omit</strong> (<em>object: same type as cat_var</em>) – optional value of cat_var to omit from the design matrix (to avoid collinearity)</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">design matrix</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">pandas data frame: column names have the format ‘cat_var’ + : + &lt;value of cat_var indicator indicates&gt;</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="modeling.functions.decile_plot">
+<code class="descclassname">modeling.functions.</code><code class="descname">decile_plot</code><span class="sig-paren">(</span><em>score_variable</em>, <em>binary_variable</em>, <em>xlab='Score'</em>, <em>ylab='Actual'</em>, <em>title='Decile Plot'</em>, <em>plot_maximum=None</em>, <em>plot_minimum=None</em>, <em>confidence_level=0.95</em>, <em>correlation=0</em>, <em>subtitle=None</em>, <em>wait=True</em><span class="sig-paren">)</span><a class="headerlink" href="#modeling.functions.decile_plot" title="Permalink to this definition">¶</a></dt>
+<dd><p>This function creates the so-called decile plot.  The input data (score_variable, binary_variable) is
+divided into 10 equal groups based on the deciles of score_variable.  Within each decile, the values of the
+two are averaged.  These 10 pairs are plotted.  A reference line is ploted.  Within each group a confidence
+interval is plotted as a vertical line.  The user may specify the confidence level and also the pair-wise
+correltion between the points (binary variable) within a decile.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>score_variable</strong> (<em>pandas series</em><em>, </em><em>numpy array</em><em> or </em><em>numpy column vector</em>) – continuous variable from the logistic regression</li>
+<li><strong>binary_variable</strong> (<em>pandas series</em><em>, </em><em>numpy array</em><em> or </em><em>numpy column vector</em>) – binary outcome (dependent) variable from the logistic regression</li>
+<li><strong>xlab</strong> (<em>str</em>) – label for the x-axis (score variable), optional</li>
+<li><strong>ylab</strong> (<em>str</em>) – label for the y-axis (binary variable), optional</li>
+<li><strong>title</strong> (<em>str</em>) – title for the plot, optional</li>
+<li><strong>plot_maximum</strong> (<em>float</em>) – maximum value for the plot, optional</li>
+<li><strong>plot_minimum</strong> (<em>float</em>) – minimum value for the plot, optional</li>
+<li><strong>confidence_level</strong> (<em>float</em>) – confidence level for confidence intervals around each decile, optional (default = 0.95)</li>
+<li><strong>correlation</strong> (<em>float</em>) – pair-wise correlation between data within each decile, optional (default=0)</li>
+<li><strong>subtitle</strong> (<em>str</em>) – subtitle for the plot, optional (default=None)</li>
+<li><strong>wait</strong> (<em>bool</em>) – if True waits for a keypress after creating the plot, optional (default=True)</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">plot</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">N/A</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="modeling.functions.ks_calculate">
+<code class="descclassname">modeling.functions.</code><code class="descname">ks_calculate</code><span class="sig-paren">(</span><em>score_variable</em>, <em>binary_variable</em>, <em>plot=False</em>, <em>wait=True</em>, <em>xlab='Score'</em>, <em>ylab='CDF'</em>, <em>title='KS Plot'</em>, <em>subtitle=None</em><span class="sig-paren">)</span><a class="headerlink" href="#modeling.functions.ks_calculate" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculates the KS (Kolmogorov Smirnov) distance between two cdfs.  The KS statistic is 100 times the
+maximum vertical difference between the two cdfs</p>
+<p>The single input score_variable contains values from the two populations.  The two populations are distinguished
+by the value of binvar (0 means population A, 1 means population B).</p>
+<p>Optionally, the plot of the CDF of score variable for the two values of binary_variable may be plotted.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>score_variable</strong> (<em>pandas series</em><em>, </em><em>numpy array</em><em> or </em><em>numpy vector</em>) – continuous variable from the logistic regression</li>
+<li><strong>binary_variable</strong> (<em>numpy array</em><em> or </em><em>numpy vector</em>) – binary outcome (dependent) variable from the logistic regression</li>
+<li><strong>xlab</strong> (<em>str</em>) – label for the x-axis (score variable), optional</li>
+<li><strong>ylab</strong> (<em>str</em>) – label for the y-axis (binary variable), optional</li>
+<li><strong>title</strong> (<em>str</em>) – title for the plot, optional</li>
+<li><strong>subtitle</strong> (<em>str</em>) – subtitle for the plot, optional (default=None)</li>
+<li><strong>wait</strong> (<em>bool</em>) – if True waits for a keypress after creating the plot, optional (default=True)</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">KS statistic (0 to 100),</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">float</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="modeling.functions.linear_splines_basis1">
+<code class="descclassname">modeling.functions.</code><code class="descname">linear_splines_basis1</code><span class="sig-paren">(</span><em>x</em>, <em>knots</em>, <em>omit=None</em><span class="sig-paren">)</span><a class="headerlink" href="#modeling.functions.linear_splines_basis1" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create basis functions based on linear splines.
+If there are k knots, then there are k basis functions.  The basis functions are number 0 to (k-1).
+These basis functions are sometimes called ‘hats’.  There is no intercept or overall linear term.
+The output spline will connect the dots of the parameters applied to each basis function.</p>
+<p>The form of the basis functions is:</p>
+<blockquote>
+<div><dl class="docutils">
+<dt>b0(x) = 1 if x &lt;= k[0],</dt>
+<dd>(k[1] - x)/(k[1] - k[0]) if k[0] &lt;= x &lt;= k[1]
+0 if x &gt;= k[1]</dd>
+<dt>bj(x) = 0 if x &lt;= k[j-1]</dt>
+<dd>(x - k[j-1]) / (k[j] - k[j-1]), if k[j-1] &lt;= x &lt;= k[j]
+(k[j+1] - x) / (k[j+1] - k[j]), if k[j] &lt;= x &lt;= k[j+1]
+0 if x &gt;= k[j+1]
+for 0 &lt; j &lt; n</dd>
+<dt>bn(x) = 0 if x &lt;= k[n-1]</dt>
+<dd>(x - k[n-1]) / (k[n] - k[n-1]), if k[n-1] &lt;= x &lt;= k[n]
+1 if x &gt;= k[n]</dd>
+</dl>
+<p>for knot points k[0] &lt; k[1] &lt; … &lt; k[n]</p>
+</div></blockquote>
+<p>An important difference between basis1 and basis2 is that basis1 is flat after k[n] and before k[0].
+The basis2 result is basis2 is linear.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>x</strong> (<em>pandas series: type float</em>) – variable from which to calculate the values of the linear spline basis functions.</li>
+<li><strong>knots</strong> (<em>numpy array</em>) – knot points of the splines</li>
+<li><strong>omit</strong> (<em>int</em>) – basis function to omit from the return (0=first basis function). Returns all if None.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">basis function values.</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">pandas dataframe. columns are named &lt;x name&gt; &lt;basis function number&gt;</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="modeling.functions.linear_splines_basis2">
+<code class="descclassname">modeling.functions.</code><code class="descname">linear_splines_basis2</code><span class="sig-paren">(</span><em>x</em>, <em>knots</em>, <em>omit=None</em><span class="sig-paren">)</span><a class="headerlink" href="#modeling.functions.linear_splines_basis2" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create basis functions based on linear splines.
+If there are n knots, there are k+2 basis functions.</p>
+<p>The basis functions are:</p>
+<blockquote>
+<div><ul>
+<li><p class="first">b0(x) = 1</p>
+</li>
+<li><p class="first">b1(x) = x</p>
+</li>
+<li><p class="first">bn(x)</p>
+<blockquote>
+<div><ul class="simple">
+<li>= 0 if x &lt; k[j]</li>
+<li>= x - k[j], if x &gt; k[j]</li>
+</ul>
+</div></blockquote>
+</li>
+</ul>
+</div></blockquote>
+<p>An important difference between basis1 and basis2 is that basis1 is flat after k[n] and before k[0].
+The basis2 result is basis2 is linear.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>x</strong> (<em>pandas series: type float</em>) – variable from which to calculate the values of the linear spline basis functions.</li>
+<li><strong>knots</strong> (<em>numpy array</em>) – knot points of the splines</li>
+<li><strong>omit</strong> (<em>int</em>) – basis function to omit from the return (0=first basis function). Returns all if None.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">basis function values.</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">pandas dataframe. columns are named &lt;x name&gt; &lt;basis function number&gt;</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="modeling.functions.smooth_linear_splines">
+<code class="descclassname">modeling.functions.</code><code class="descname">smooth_linear_splines</code><span class="sig-paren">(</span><em>x</em>, <em>y</em>, <em>xtest</em>, <em>num_turn</em>, <em>holdout_rate=0.5</em>, <em>wts=None</em><span class="sig-paren">)</span><a class="headerlink" href="#modeling.functions.smooth_linear_splines" title="Permalink to this definition">¶</a></dt>
+<dd><p>This function uses linear splines to smooth a scatterplot. The input x is a matrix of linear splines using
+basis2.  The first two columns are the constant and linear terms.  The remaining terms, that provide the
+nonlinearity, are shrunk toward zero using ridge regression.</p>
+<p>The ridge parameter is selected to minimize the sum of squared error on a holdout sample.</p>
+<p>See <a class="reference external" href="https://www.whitman.edu/Documents/Academics/Mathematics/Griggs.pdf">https://www.whitman.edu/Documents/Academics/Mathematics/Griggs.pdf</a> section 6.1</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>x</strong> (<em>numpy matrix</em>) – matrix of linear (basis2) splines</li>
+<li><strong>y</strong> (<em>numpy array</em><em> or </em><em>numpy column matrix</em><em> or </em><em>pandas series</em>) – dependent variable</li>
+<li><strong>xtest</strong> (<em>numpy matrix</em>) – splines at an array of points at which to evaluate the function to assess smoothness</li>
+<li><strong>num_turn</strong> (<em>float</em>) – smoothness criterion. Number of turns permitted in function.</li>
+<li><strong>holdout_rate</strong> (<em>float</em>) – fraction of observations to hold out for validation to select shrinkage</li>
+<li><strong>wts</strong> (<em>numpy array</em>) – weights for the fit</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">yhat: fitted values, beta: paramaeters, ridge: ridge parameter</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">dict</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper"><div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="introduction.html" title="previous chapter">Python Modeling Tools</a></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2018, Will Alexander.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.6.7</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
+      
+      |
+      <a href="_sources/glm.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

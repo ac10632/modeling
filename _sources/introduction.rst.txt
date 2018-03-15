@@ -51,9 +51,9 @@ Package contents:
    - from modeling_tools.data_class import DataClass
    - from modeling_tools.glm import glm
 
-The code is available `here <https://github.com/worksprogress1/modeling_tools>`_.
+The code is available `here <https://github.com/ac10632/modeling>`_.
 
 It may be installed via pip.  For example, on Ubuntu:
 
-sudo pip3 install git+https://git@github.com/worksprogress1/modeling_tools
+pip3 install git+https://git@github.com/ac10632/modeling
 

@@ -648,7 +648,7 @@ def decile_plot(score_variable, binary_variable, xlab='Score', ylab='Actual', ti
         min_limit = plot_minimum  # User-supplied value
 
     # Reference line
-    rxy = [0, max_limit]
+    rxy = [min_limit, max_limit]
     # plot--deciles
     plt.plot(rxy, rxy, mscore, mbinary, 'ro')
 
@@ -669,15 +669,16 @@ def decile_plot(score_variable, binary_variable, xlab='Score', ylab='Actual', ti
     
     # Add # of obs
     sub_title = np.str(score_variable.shape[0]) + ' Obs'
-    sub_title += '\n confidence: ' + str(confidence_level)
-    sub_title += '\n correlation: ' + str(correlation)
+    sub_title += '\nconfidence: ' + str(confidence_level)
+    sub_title += '\ncorrelation: ' + str(correlation)
     if not (subtitle is None):  sub_title = subtitle + '\n' + sub_title
-    plt.figtext( (max_limit) / 2.0, 0.15, sub_title, ha='center')
+    plt.figtext(0.7, 0.2, sub_title, ha='left')
     
     # Add mean of binvar and score
+    rangexy = max_limit - min_limit
     MeansTitle = 'Actual ' + np.str(round(binary_variable.mean(), 3))
     MeansTitle = MeansTitle + '\nScore ' + np.str(round(score_variable.mean(), 3))
-    plt.annotate(MeansTitle, xy=[0.05, 0.9 * max_limit])
+    plt.annotate(MeansTitle, xy=[min_limit + 0.1 * rangexy, max_limit - 0.1 * rangexy])
     plt.show()
     if wait:
         plt.waitforbuttonpress()

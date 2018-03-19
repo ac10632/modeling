@@ -610,7 +610,7 @@ class glm(DataClass):
                 self.__hat_diagonal = np.diag(x * self.__xpxI * x.T)
         # logistic regression via IRWLS
         if self.family == 'BINOMIAL':
-            from modeling_tools.functions import ks_calculate
+            from modeling.functions import ks_calculate
             wt = np.empty(self.n)
             wt.fill(1.)
             y1 = y.copy()
@@ -870,7 +870,7 @@ class glm(DataClass):
             raise FileExistsError('glm: cannot open file file for writing: ' + file_name)
         indent = ''
         for j in range(indent_level): indent += ' '
-        output_file.write('from modeling_tools.functions import categorical_to_design, linear_splines_basis1, linear_splines_basis2\n')
+        output_file.write('from modeling.functions import categorical_to_design, linear_splines_basis1, linear_splines_basis2\n')
         output_file.write('import numpy as np\n')
         output_file.write(indent + 'def ' + function_name + '(df_in):\n')
         indent += '    '
@@ -881,9 +881,16 @@ class glm(DataClass):
                 index = self.x_column_names == factor
                 if index.sum() != 1:
                     raise ValueError('glm: parameter not found')
-                param = self.parameters[index]
-                line1 = indent + line + str(float(param))
-                output_file.write(line1 + '\n')
+                if factor.find(':') > 0:
+                    exist_line = 'if "' + factor +'" in xyz["df_out"].columns.values:'
+                    output_file.write(indent +  exist_line + '\n')
+                    param = self.parameters[index]
+                    line1 = '    ' + indent + line + str(float(param))
+                    output_file.write(line1 + '\n')
+                else:
+                    param = self.parameters[index]
+                    line1 = indent + line + str(float(param))
+                    output_file.write(line1 + '\n')
         if self.family == 'BINOMIAL':
             output_file.write(indent + 'fn = np.exp(fn)\n')
             output_file.write(indent + 'fn /= (1+fn)\n')

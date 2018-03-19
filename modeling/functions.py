@@ -438,18 +438,18 @@ def categorical_to_design(cat_var, omit=None):
 
 
     """
-    from modeling.data_class import DataError
+    import warnings
     if str(cat_var.dtype) != 'category':
         cat_var = cat_var.astype('str')
     vals = cat_var.value_counts().index.astype('str').sort_values()
     if vals.size == 1:
-        raise DataError('categorical_to_design: series ' + cat_var.name + ' has only 1 level')
+        warnings.warn('categorical_to_design: series ' + cat_var.name + ' has only 1 level')
     target_vals = vals
     if not (omit is None):
         omit = str(omit)
         i = vals == omit
         if i.sum() == 0:
-            raise DataError('categorical_to_design: category does not have level: '
+            warnings.warn('categorical_to_design: category does not have level: '
                             + omit + ' or conflicting data types')
         target_vals = vals[vals != omit]
     #

@@ -559,7 +559,7 @@ class DataClass(object):
                 else:
                     omit = f1[0:(len(f1) - 1)]
                 df_out = categorical_to_design(self.df[varn], omit)
-                ccall = 'xyz = categorical_to_design(df_in["' + varn + '"], ' + '"' + omit + '")'
+                ccall = 'xyz = categorical_to_design(df_in["' + varn + '"], ' + '"' + omit + '", error_out=False)'
                 self.__implementationSkeleton += [[ccall, None]]
                 for col in df_out['df_out'].columns:
                     self.__implementationSkeleton += [['fn += ' + 'xyz["df_out"]["' + col + '"] * ', col]]

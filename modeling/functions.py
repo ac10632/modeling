@@ -424,7 +424,7 @@ def linear_splines_basis2(x, knots, omit=None):
     return df_out
 
 
-def categorical_to_design(cat_var, omit=None):
+def categorical_to_design(cat_var, omit=None, error_out=True):
     """
     Create the design matrix of indicator variables from an input categorical variable.
     if omit == None, then each distinct value of cat_var will receive a column in the return.
@@ -433,23 +433,26 @@ def categorical_to_design(cat_var, omit=None):
     :type cat_var: pandas series: can be of any type.
     :param omit: optional value of cat_var to omit from the design matrix (to avoid collinearity)
     :type omit: object: same type as cat_var
+    :param error_out: if True, throws an error if there is a problem
+    :type error_out: bool
     :return: design matrix
     :rtype: pandas data frame: column names have the format 'cat_var' + : + <value of cat_var indicator indicates>
 
 
     """
-    import warnings
+    from modeling.data_class import DataError
+
     if str(cat_var.dtype) != 'category':
         cat_var = cat_var.astype('str')
     vals = cat_var.value_counts().index.astype('str').sort_values()
-    if vals.size == 1:
-        warnings.warn('categorical_to_design: series ' + cat_var.name + ' has only 1 level')
+    if vals.size == 1 and error_out:
+        raise DataError('categorical_to_design: series ' + cat_var.name + ' has only 1 level')
     target_vals = vals
     if not (omit is None):
         omit = str(omit)
         i = vals == omit
-        if i.sum() == 0:
-            warnings.warn('categorical_to_design: category does not have level: '
+        if i.sum() == 0 and error_out:
+            raise DataError('categorical_to_design: category does not have level: '
                             + omit + ' or conflicting data types')
         target_vals = vals[vals != omit]
     #

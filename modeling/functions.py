@@ -352,7 +352,7 @@ def linear_splines_basis1(x, knots, omit=None):
         ibool = (x >= knots[i - 1]) & (x < knots[i])
         wts = (x[ibool] - knots[i - 1]) / (knots[i] - knots[i - 1])
         df_out.loc[ibool, x.name + str(i - 1)] = 1 - wts
-        df_out[ibool, x.name + str(i)] = wts
+        df_out.loc[ibool, x.name + str(i)] = wts
     
     # drop column specified
     if not (omit is None):

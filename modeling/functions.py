@@ -633,7 +633,7 @@ def decile_plot(score_variable, binary_variable, xlab='Score', ylab='Actual', ti
 
     if plot_maximum is None:
         # Want the x & y axes to have same range
-        max_limit = max(mscore[9], mbinary[9])
+        max_limit = max(max(mscore), max(mbinary))
         if binary:
             max_limit = round(max_limit + 0.05, 1)
         else:

@@ -617,7 +617,7 @@ def decile_plot(score_variable, binary_variable, xlab='Score', ylab='Actual', ti
         if str(type(binary_variable)).find('numpy.matrixlib.defmatrix.matrix') >= 0:
             binary_variable = pd.Series(np.squeeze(np.asarray(binary_variable)))
 
-    bins = pd.qcut(score_variable, 10, labels=False)
+    bins = pd.qcut(score_variable, 10, labels=False, duplicates='drop')
 
     mscore = score_variable.groupby(bins).mean()
     counts = score_variable.groupby(bins).count()

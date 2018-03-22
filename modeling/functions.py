@@ -657,7 +657,7 @@ def decile_plot(score_variable, binary_variable, xlab='Score', ylab='Actual', ti
     plt.plot(rxy, rxy, mscore, mbinary, 'ro')
 
     # Do confidence intervals
-    for k in range(0, 10):
+    for k in range(0, mbinary.shape[0]):
         if binary:
             variance = mbinary[k] * (1.0 - mbinary[k])
         else:

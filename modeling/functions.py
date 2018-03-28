@@ -111,13 +111,12 @@ def smooth_linear_splines(x, y, xtest, num_turn, holdout_rate = 0.5, wts=None):
     den_df = x.shape[0] - x.shape[1]
     f = ((sse_linearF - sse_wigglyF)/num_df)/(sse_wigglyF/den_df)
     pvalue = 1 - stats.f.cdf(f, num_df, den_df)
-
     xs = np.zeros(3)
     ys = np.zeros(3)
     step = min(maxdiag/1000,1)  # this is the value to step the ridge parameter
     #I've observed that the solutions tend to be at one extreme or the other: either very smooth
     #or very wiggly.  Require a lot of evidence for a large ridge:
-    if (sse_linear < sse_wiggly) and (pvalue > 0.1):
+    if (sse_linear < sse_wiggly) and (pvalue > 0.01):
         # start from linear answer
         xs[0] = 1000*maxdiag
         ys[0] = sse_linear

@@ -117,7 +117,7 @@ def smooth_linear_splines(x, y, xtest, num_turn, holdout_rate = 0.5, wts=None):
     step = min(maxdiag/1000,1)  # this is the value to step the ridge parameter
     #I've observed that the solutions tend to be at one extreme or the other: either very smooth
     #or very wiggly.  Require a lot of evidence for a large ridge:
-    if (sse_linear < sse_wiggly) and (pvalue > 0.01):
+    if (sse_linear < sse_wiggly) and (pvalue > 0.1):
         # start from linear answer
         xs[0] = 1000*maxdiag
         ys[0] = sse_linear

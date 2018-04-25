@@ -474,7 +474,17 @@ class glm(DataClass):
             if var_type == 'SPLINES: HATS':
                 x_values = self.factors[effect]['knots']
                 z = self.parameters.index
-                y_values_x = self.parameters[[(lambda x: x.find(effect) >= 0)(x) for x in z]]
+                y_values_x = []
+                # look for the parameters. Must start with <effect> followed by an integer
+                for ind, x in enumerate(z):
+                    if len(x) > len(effect) and x[0:len(x)-1] == effect:
+                        try:
+                            test = int(x[len(effect):len(x)])
+                            ok = True
+                        except:
+                            ok = False
+                        if ok:
+                            y_values_x += [self.parameters[ind]]
                 omit = self.factors[effect]['omit']
                 if omit is None:
                     y_values = y_values_x

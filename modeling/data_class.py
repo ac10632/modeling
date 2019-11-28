@@ -598,7 +598,7 @@ class DataClass(object):
             formula = formula[(i + 1):len(formula)]
             if (self.df.columns == yvar).sum() == 0:
                 raise ModelError('DataClass: dependent variable not in DataFrame')
-            self.__y = np.matrix(self.df[yvar].as_matrix()).T
+            self.__y = np.matrix(self.df[yvar].as_matrix()).T  # change to .value
             #
             if self.family == 'BINOMIAL':
                 # check 2 values:
@@ -647,5 +647,5 @@ class DataClass(object):
                                                      'levels': df_factor['levels']}
         if df_out is None:
             raise ModelError('DataClass: no factors specified')
-        self.__x = np.matrix(df_out.as_matrix())
+        self.__x = np.matrix(df_out.as_matrix()) # change to .value
         self.__xColumnNames = df_out.columns

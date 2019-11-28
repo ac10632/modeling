@@ -41,7 +41,7 @@ def smooth_linear_splines(x, y, xtest, num_turn, holdout_rate = 0.5, wts=None):
     if (str(type(y)).find('numpy.ndarray') >= 0) or (str(type(y)).find('pandas.core.series') >= 0):
         y = np.matrix(y).T
     else:
-        if str(type(y)).find('numpy.matrixlib.defmatrix.matrix') < 0:
+        if str(type(y)).find('numpy.matrixlib.defmatrix.matrix') < 0:  # change this
             raise DataError('smooth_hats: y must be numpy array or column vector')
     if str(type(x)).find('pandas.core.frame.DataFrame') >= 0:
         x = np.matrix(x)

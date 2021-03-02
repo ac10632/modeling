@@ -40,11 +40,11 @@ def smooth_linear_splines(x, y, xtest, num_turn, holdout_rate=0.5, wts=None):
     if (str(type(y)).find('numpy.ndarray') >= 0) or (str(type(y)).find('pandas.core.series') >= 0):
         y = np.matrix(y).T
     else:
-        if str(type(y)).find('numpy.matrixlib.defmatrix.matrix') < 0:  # change this
-            raise DataError('smooth_hats: y must be numpy array or column vector')
+      if str(type(y)).find('numpy.matrix') < 0:  # change this
+        raise DataError('smooth_hats: y must be numpy array or column vector')
     if str(type(x)).find('pandas.core.frame.DataFrame') >= 0:
         x = np.matrix(x)
-    if str(type(x)).find('numpy.matrixlib.defmatrix.matrix') == 0:
+    if str(type(x)).find('numpy.matrix') == 0:
         raise DataError('smooth_hats: x must be numpy matrix')
     if x.shape[0] != y.shape[0]:
         raise DataError('smoth_hats: x and y must have the same number of rows')
@@ -503,13 +503,13 @@ def ks_calculate(score_variable, binary_variable, plot=False, wait=True, xlab='S
     if str(type(score_variable)).find('numpy.ndarray') >= 0:
         score_variable = pd.Series(score_variable)
     else:
-        if str(type(score_variable)).find('numpy.matrixlib.defmatrix.matrix') >= 0:
+        if str(type(score_variable)).find('numpy.matrix') >= 0:
             score_variable = pd.Series(np.squeeze(np.asarray(score_variable)))
     
     if str(type(binary_variable)).find('numpy.ndarray') >= 0:
         binary_variable = pd.Series(binary_variable)
     else:
-        if str(type(binary_variable)).find('numpy.matrixlib.defmatrix.matrix') >= 0:
+        if str(type(binary_variable)).find('numpy.matrix') >= 0:
             binary_variable = pd.Series(np.squeeze(np.asarray(binary_variable)))
     
     # divide the score_variable array by whether the binary variable is 0 or 1
@@ -607,13 +607,13 @@ def decile_plot(score_variable, binary_variable, xlab='Score', ylab='Actual', ti
     if str(type(score_variable)).find('numpy.ndarray') >= 0:
         score_variable = pd.Series(score_variable)
     else:
-        if str(type(score_variable)).find('numpy.matrixlib.defmatrix.matrix') >= 0:
+        if str(type(score_variable)).find('numpy.matrix') >= 0:
             score_variable = pd.Series(np.squeeze(np.asarray(score_variable)))
     
     if str(type(binary_variable)).find('numpy.ndarray') >= 0:
         binary_variable = pd.Series(binary_variable)
     else:
-        if str(type(binary_variable)).find('numpy.matrixlib.defmatrix.matrix') >= 0:
+        if str(type(binary_variable)).find('numpy.matrix') >= 0:
             binary_variable = pd.Series(np.squeeze(np.asarray(binary_variable)))
     
     bins = pd.qcut(score_variable, 10, labels=False, duplicates='drop')

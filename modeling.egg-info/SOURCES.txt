@@ -1,0 +1,14 @@
+setup.py
+modeling/__init__.py
+modeling/data_class.py
+modeling/functions.py
+modeling/gam.py
+modeling/glm.py
+modeling/test_functions.py
+modeling/test_gam.py
+modeling/test_glm.py
+modeling.egg-info/PKG-INFO
+modeling.egg-info/SOURCES.txt
+modeling.egg-info/dependency_links.txt
+modeling.egg-info/requires.txt
+modeling.egg-info/top_level.txt

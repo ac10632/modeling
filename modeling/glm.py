@@ -8,7 +8,6 @@ from modeling.data_class import DataClass, ModelError
 
 
 class glm(DataClass):
-    
     """
     This class fits a Generalized Linear Model.  This class inherits from DataClass.
 
@@ -30,14 +29,14 @@ class glm(DataClass):
     - event. Optional specification of the event to model for logistic regression.
     - restrictions. Optional restrictions on the coefficients.
     - ridge. Optional ridge parameters for ridge regression.
-    
+
     Finally,
-    
+
     - fit. Optional.  If False, the model is not fit.  Mostly for use by gam.
 
     Example:
     ::
-    
+
         g = glm('default ~ credit + h(ltv,(40,70,90,130),0)', myData, family='binomial')
 
     **Methods**
@@ -47,15 +46,15 @@ class glm(DataClass):
     - :meth:`~glm.plot_effects`
 
     - :meth:`~glm.predict`
-    
+
     **Attributes**
-    
+
     - :meth:`~glm.condition_index`
 
     - :meth:`~data_class.DataClass.event`
 
     - :meth:`~data_class.DataClass.factors`
-    
+
     - :meth:`~data_class.DataClass.family`
 
     - :meth:`~glm.fitted`
@@ -106,7 +105,7 @@ class glm(DataClass):
 
     """
     
-    def __init__(self, formula, df, family, wts = None, event = None, restrictions = None, ridge = None, fit = True):
+    def __init__(self, formula, df, family, wts=None, event=None, restrictions=None, ridge=None, fit=True):
         
         DataClass.__init__(self, df)
         self.family = family
@@ -116,7 +115,6 @@ class glm(DataClass):
                 raise ModelError('glm: cannot specify weights with family BINOMIAL')
             self.wts = wts
         self.event = event
-        
         self.build_design()
         # x.T * x for the design matrix
         self.__xpx = None
@@ -157,18 +155,18 @@ class glm(DataClass):
             self.__glm_fitter()
             if self.ridge is not None:
                 self.__ttable['ridge'] = self.ridge
-
+    
     @property
     def ridge(self):
         """
         Parameters for ridge regression.  Size of array is *p*.  The values correspond  to the effects in the
         model in the same order as they appear in the user formula, which is the same order as the attribute
         t_table. If ridge has been specified, the values are returned as part of t_table.
-        
+
         :return: ridge parameters specified by user
         :rtype:  numpy array
-        
-        
+
+
         """
         return self.__ridge
     
@@ -179,8 +177,8 @@ class glm(DataClass):
         :type value: numpy array, vector or pandas Series
         :return: ridge values
         :rtype: numpy column vector
-        
-        
+
+
         """
         if value is None:
             self.__ridge = None
@@ -196,7 +194,7 @@ class glm(DataClass):
         if value.shape[0] != self.p:
             raise ModelError('glm: ridge array must have p entries')
         return value
-
+    
     @property
     def restrictions(self):
         """
@@ -291,7 +289,7 @@ class glm(DataClass):
     def model_significance(self):
         """
         Model significance statistic.  The return depends on the family:
-        
+
         - Normal family. The return is the F-statistic.
         - Binomial family. The return is the chi-square statistic based on the likelihood ratio.
 
@@ -302,10 +300,10 @@ class glm(DataClass):
 
 
         """
-
+        
         if self.has_intercept:
             num_df = float(self.p - 1)
-            if  (self.family == 'NORMAL'):
+            if (self.family == 'NORMAL'):
                 den_df = float(self.model_degrees_freedom)
                 return self.__f_statistic, num_df, den_df, 1 - stats.f.cdf(self.__f_statistic, num_df, den_df)
             else:
@@ -418,11 +416,11 @@ class glm(DataClass):
         """
         return self.__parameters
     
-    def plot_effects(self, effect = None, wait=True):
+    def plot_effects(self, effect=None, wait=True):
         """
         Plots the marginal effect of a factor in the model.
         If *effect* is not specified, each factor is plotted.
-        
+
         :param effect: A single effect to plot.  If omitted, all effects are plotted.
         :type effect: str
         :param wait: if True, then waits for a keypress after the plot
@@ -432,40 +430,40 @@ class glm(DataClass):
 
 
         """
-
+        
         if (effect is not None):
             try:
                 var_type = self.factors[effect]
             except:
                 raise KeyError('glm: ' + effect + ' is not a factor in the model')
-            self.__plot_single(effect,wait)
+            self.__plot_single(effect, wait)
             plt.show()
             plt.close()
         else:
             for fx in list(self.factors.keys()):
-                self.__plot_single(fx,wait)
-
-    def __plot_single(self,effect,wait=True):
+                self.__plot_single(fx, wait)
+    
+    def __plot_single(self, effect, wait=True):
         """
         Plots the marginal effect of a factor in the model.
-        
+
         :param effect: name of the effect (factor) in the model to plot.
         :type effect: str
         :param wait: if True, will wait for a keypress before continuing
         :type wait: bool
         :return: plot
         :rtype:  matplotlib plot
-        
-        
+
+
         """
         var_type = self.factors[effect]['type']
         if var_type == 'DIRECT':
-            x_values = self.df[effect].quantile([0.01,.99])
+            x_values = self.df[effect].quantile([0.01, .99])
             y_values = self.parameters[effect] * x_values
             plt.xlabel(effect + ' Value')
             plt.ylabel('Marginal Effect')
             plt.title('Marginal Effect of ' + effect)
-            plt.plot(x_values,y_values)
+            plt.plot(x_values, y_values)
             plt.show()
             if wait:
                 plt.waitforbuttonpress()
@@ -477,7 +475,7 @@ class glm(DataClass):
                 y_values_x = []
                 # look for the parameters. Must start with <effect> followed by an integer
                 for ind, x in enumerate(z):
-                    if len(x) > len(effect) and x[0:len(x)-1] == effect:
+                    if len(x) > len(effect) and x[0:len(x) - 1] == effect:
                         try:
                             test = int(x[len(effect):len(x)])
                             ok = True
@@ -490,11 +488,11 @@ class glm(DataClass):
                     y_values = y_values_x
                 else:
                     y_values = np.zeros(x_values.size)
-                    y_values[np.arange(x_values.size)!=omit] = y_values_x
+                    y_values[np.arange(x_values.size) != omit] = y_values_x
                 plt.xlabel(effect + ' Value')
                 plt.ylabel('Marginal Effect')
                 plt.title('Marginal Effect of ' + effect)
-                plt.plot(x_values,y_values)
+                plt.plot(x_values, y_values)
                 plt.show()
                 if wait:
                     plt.waitforbuttonpress()
@@ -502,7 +500,7 @@ class glm(DataClass):
             else:
                 if var_type == 'SPLINES: LINEAR':
                     qs = self.df[effect].quantile([0.01, .99])
-                    x_values = np.arange(qs[0.01],qs[0.99],(qs[0.99]-qs[0.01])/100)
+                    x_values = np.arange(qs[0.01], qs[0.99], (qs[0.99] - qs[0.01]) / 100)
                     knots = self.factors[effect]['knots']
                     z = self.parameters.index
                     y_values_x = self.parameters[[(lambda x: x.find(effect) >= 0)(x) for x in z]]
@@ -514,39 +512,39 @@ class glm(DataClass):
                     else:
                         y_values = np.zeros(knots.size)
                         y_values[np.arange(x_values.size) != omit] = y_values_x
-                    for (j,knot) in enumerate(knots):
+                    for (j, knot) in enumerate(knots):
                         i = x_values >= knot
-                        yh[i] += (x_values[i] - knot) * y_values[j+1]
+                        yh[i] += (x_values[i] - knot) * y_values[j + 1]
                     plt.plot(x_values, yh)
                     plt.xlabel(effect + ' Value')
                     plt.ylabel('Marginal Effect')
                     plt.title('Marginal Effect of ' + effect)
                     plt.show()
                     if wait:
-                      plt.waitforbuttonpress()
-                      plt.close()
+                        plt.waitforbuttonpress()
+                        plt.close()
                 else:
                     if var_type == 'CATEGORICAL':
                         z = self.parameters.index
                         labels = self.factors[effect]['levels']
-                        x_values = np.arange(0,labels.size,1)
+                        x_values = np.arange(0, labels.size, 1)
                         y_values_x = self.parameters[[(lambda x: x.find(effect) >= 0)(x) for x in z]]
                         omit = self.factors[effect]['omit']
                         if omit is None:
                             y_values = y_values_x
                         else:
                             y_values = np.zeros(x_values.size)
-                            y_values[labels!=omit] = y_values_x
-                        plt.xticks(x_values,labels,rotation=70)
+                            y_values[labels != omit] = y_values_x
+                        plt.xticks(x_values, labels, rotation=70)
                         plt.xlabel(effect + ' Value')
                         plt.ylabel('Marginal Effect')
                         plt.title('Marginal Effect of ' + effect)
-                        plt.plot(x_values,y_values,'o')
+                        plt.plot(x_values, y_values, 'o')
                         plt.show()
                         if wait:
                             plt.waitforbuttonpress()
                             plt.close()
-
+    
     def __glm_fitter(self):
         """Fit a linear regression or logistic regression model
         Populates these fields:
@@ -576,7 +574,7 @@ class glm(DataClass):
             self.__xpx += np.diag((np.squeeze(np.asarray(self.ridge))))
         # is the model over-specified?
         r = linalg.matrix_rank(self.__xpx)
-        #if r < self.p:
+        # if r < self.p:
         #    raise ModelError('glm: design matrix not full rank')
         # linear regression
         if self.family == 'NORMAL':
@@ -653,8 +651,8 @@ class glm(DataClass):
                     else:
                         self.__ridge += ridge
                 if j > 0:
-                    delta = (abs(b-bold)).max()
-                    if (j==49) or (delta < 0.0001):
+                    delta = (abs(b - bold)).max()
+                    if (j == 49) or (delta < 0.0001):
                         break
                 yhat_exp = np.exp(yhat)
                 p0 = yhat_exp / (1 + yhat_exp)
@@ -681,15 +679,15 @@ class glm(DataClass):
             not0 = (se > 1e-7)
             t = np.zeros(beta.shape[0])
             t[not0] = beta.beta[not0] / se[not0]
-            #se = np.sqrt(np.diag(self.__xpxI))
-            #t = beta.beta / se
+            # se = np.sqrt(np.diag(self.__xpxI))
+            # t = beta.beta / se
             # likelihood ratio statistic
             y = np.squeeze(np.asarray(self.y))
             p0 = np.squeeze(np.asarray(p0))
-            ll = np.where(y == 1, np.log(p0), np.log(1-p0))
+            ll = np.where(y == 1, np.log(p0), np.log(1 - p0))
             l1 = ll.sum()
             p = y.mean()
-            l2 = (y.sum()) * math.log(p) + (self.n - y.sum()) * math.log(1-p)
+            l2 = (y.sum()) * math.log(p) + (self.n - y.sum()) * math.log(1 - p)
             chisq = -2 * (l2 - l1)
             self.__chisq_statistic = chisq
             beta['se'] = se
@@ -738,13 +736,13 @@ class glm(DataClass):
         """
         This function is used in parsing restrictions.
         It pulls a single term off from the equation, returns that term and the remaining equation
-        
+
         :param eqn: restriction equation (may be partial)
         :type eqn: str
         :return: first term in eqn and the remaining eqn with term removed
         :rtype: list of str
-        
-        
+
+
         """
         plus = eqn[1:len(eqn)].find('+')
         if plus >= 0:
@@ -771,13 +769,13 @@ class glm(DataClass):
         """
         This function is used in parsing restrictions.
         It takes a single term and splits off the coefficient from the variable name
-        
+
         :param term: single term of the restrcionts
         :type term: str
         :return: restriction coefficient and variable name
         :rtype: list of str
-        
-        
+
+
         """
         star = term.find('*')
         # no coefficient....assume it is -1 or 1.
@@ -798,15 +796,15 @@ class glm(DataClass):
         """
         Restrictions: takes a single restriction and returns a row vector of coefficients against x and the value
         of the restriction.
-        
+
         :param xcols: The names of the columns of the design matrix
         :type xcols: list of str
         :param restriction: single restriction
         :type restriction: str
         :return: array of restriction coefficients that has the same # of columns as x, RHS value
         :rtype: list
-        
-        
+
+
         """
         eq = restriction.find('=')
         if eq < 0:
@@ -836,13 +834,13 @@ class glm(DataClass):
         """
         Runs through the list of restrictions and creates a matrix of coefficients against x and
         a column vector of the RHS (what the linear combination must equal).
-        
+
         :param restriction_list: list of restrictions on the regression coefficients
         :type restriction_list:  list of str
         :return:  self.__restriction_coefficients, self.__restriction_values
         :rtype: numpy matrix, numpy vector
-        
-        
+
+
         """
         restriction_coefficients = None
         restriction_values = None
@@ -869,8 +867,8 @@ class glm(DataClass):
         :param indent_level: how much to indent the code at the 'def' level
         :type indent_level: int
         :return: None
-        
-        
+
+
         """
         try:
             output_file = open(file_name, 'w')
@@ -880,7 +878,8 @@ class glm(DataClass):
             raise FileExistsError('glm: cannot open file file for writing: ' + file_name)
         indent = ''
         for j in range(indent_level): indent += ' '
-        output_file.write('from modeling.functions import categorical_to_design, linear_splines_basis1, linear_splines_basis2\n')
+        output_file.write(
+            'from modeling.functions import categorical_to_design, linear_splines_basis1, linear_splines_basis2\n')
         output_file.write('import numpy as np\n')
         output_file.write(indent + 'def ' + function_name + '(df_in):\n')
         indent += '    '
@@ -892,8 +891,8 @@ class glm(DataClass):
                 if index.sum() != 1:
                     raise ValueError('glm: parameter not found')
                 if factor.find(':') > 0:
-                    exist_line = 'if "' + factor +'" in xyz["df_out"].columns.values:'
-                    output_file.write(indent +  exist_line + '\n')
+                    exist_line = 'if "' + factor + '" in xyz["df_out"].columns.values:'
+                    output_file.write(indent + exist_line + '\n')
                     param = self.parameters[index]
                     line1 = '    ' + indent + line + str(float(param))
                     output_file.write(line1 + '\n')

@@ -6,7 +6,7 @@ from modeling.functions import linear_splines_basis1, linear_splines_basis2, cat
 class DataError(Exception):
     """
     Raised if there's a problem in the data
-    
+
     """
     pass
 
@@ -21,44 +21,44 @@ class ModelError(Exception):
 
 class DataClass(object):
     """
-    
+
     :param df: data from which to form the design matrix, dependent variable vector.
     :type df: pandas DataFrame
-    
+
     The DataClass handles creating the design matrix and the dependent variable vector based
     on an R-type formula.
-    
+
     DataClass supports these special features in the *formula*:
-    
+
     - linear splines - basis 1 (hats).  The format:
-    
+
         .. function:: h(var, knots, omit = None)
-        
+
         - *var*: the name of the variable to form hats from.
         - *knots*: a *tuple* of knot points
         - *omit*: the (optional) basis function to omit from the design matrix.  Basis functions
           are numbered starting with 0.
         - See :meth:`functions.linear_splines_basis1`  for details of the basis functions.
-    
+
     - linear splines - basis 2.  The format:
-    
+
         .. function:: l(var, knots)
-        
+
         - *var*: the name of the variable to form hats from.
         - *knots*: a *tuple* of knot points.
         - These basis functions automatically drop the constant term.
         - See :meth:`functions.linear_splines_basis2` for details of the basis functions.
-    
-    
+
+
     - categorical variables.  The format for creating a set of indicator variables in the
       design matrix for a categorical variable is:
-      
+
         .. function:: c(var, omit = None)
-        
+
         - *var*: the name of the variable in the DataFrame df to form the indicators from.
         - *omit*: the (optional) value of *var* to omit from the indicators to avoid
           collinearity with the intercept term in the model.
-    
+
     Example usage:
     ::
 
@@ -76,8 +76,8 @@ class DataClass(object):
         design.build_design()
         print ('There are this many observations ' + str(design.n))
         print ('There are this many parameters ' + str(design.p))
-    
-    
+
+
     """
     
     def __init__(self, df):
@@ -127,24 +127,24 @@ class DataClass(object):
 
         Dictionary of factors in the model.  The keys are the variable names.  Each entry is also a dictionary with
         these elements:
-        
+
             - type.  This is the type of the factor.
-                
+
                 - DIRECT.  The factor is in the model as-is (e.g. X1) without transformation (splines) or as a category.
                 - SPLINES: HATS. The factor is in the model using linear splines basis 1.
                 - SPLINES: LINEAR. The factor is in the model using linear splines basis 2.
                 - CATEGORICAL. The factor is in the model as categorical.
-                
+
             - knots.  numpy array of knots for splines
-            
+
             - levels. For categorical variables, numpy array of levels of the variable.
-            
+
             - omit. For splines basis 1, the basis function to drop.  For categorical variables, the level to omit.
               A value of None is permitted.
-        
+
         :return: dictionary of factors
         :rtype: dict
-        
+
         """
         return self.__factors
     
@@ -212,7 +212,7 @@ class DataClass(object):
         Logistic regression assumes that the response variable is binary 0/1 and that the modeled event is 1.
 
         The user may override this by specifying the event to be modeled.  In this way:
-        
+
         - Any two-valued outcome (even strings) can be readily modeled without preprocessing.
         - If the data is already binary, the event 0 can be modeled.
 
@@ -264,10 +264,10 @@ class DataClass(object):
         - Start with '-1' to omit the intercept from the model.
 
         - .. function:: c(x_i,omit=None)
-        
+
             treats *x_i* as a class variable.  *omit* is the optional value of x_i to omit from the
             design matrix.
-          
+
         - .. function:: h(x_i,knots, omit=None)
 
             creates a set of linear splines based on *x_i*.  The knots used are specified in the tuple
@@ -281,13 +281,13 @@ class DataClass(object):
             omit a basis function.  The constant term is automatically dropped.
 
         :Example:
-        
+
         *size ~ height + weight* fits a model of *size* to the factors *height* and *weight*.
 
         :Example:
 
         .. function:: c(state,'NY')
-        
+
             creates a set of indicator values, one for each level of state.  The indicator corresponding
             to NY is omitted from the return DataFrame. Assuming state has 50 levels, the return DataFrame
             has 49 columns.  Their names are *state:AK*, *state:AL*, and so on.
@@ -295,7 +295,7 @@ class DataClass(object):
         :Example:
 
         .. function:: h(height,(48, 60, 66, 72, 78),0)
-        
+
         calculates linear spline basis 1 functions
         from the knot points 48, 60, 66, 72, 78.  The first basis function (0) is omitted.  The return
         DataFrame will have 4 columns.  Their names are: height1, height2, height3 and height4.
@@ -319,7 +319,7 @@ class DataClass(object):
         Weights to use in the regression. Weights are optional and are permitted only for the Normal family.
 
         Requirements:
-        
+
         - There must be *n* elements in the wts array.
         - Weights must be non-negative.
 
@@ -459,7 +459,8 @@ class DataClass(object):
         # case 1: this is variable in self.df
         if (c == factor).sum() == 1:
             self.__implementationSkeleton += [['fn += df_in["' + factor + '"] * ', factor]]
-            return {'varn': factor, 'df': self.df[factor], 'type': 'DIRECT', 'knots': None, 'omit': None, 'levels': None}
+            return {'varn': factor, 'df': self.df[factor], 'type': 'DIRECT', 'knots': None, 'omit': None,
+                    'levels': None}
         # case 2: hats/linear splines
         if (factor.find('h(') >= 0) or (factor.find('l(') >= 0):
             if factor.find('h(') >= 0:
@@ -537,7 +538,8 @@ class DataClass(object):
                             self.__implementationSkeleton += [[hcall, None]]
                             for col in df_out.columns:
                                 self.__implementationSkeleton += [['fn += ' + 'xyz["' + col + '"] * ', col]]
-                            return {'varn': varn, 'knots': knots, 'omit': omit, 'df': df_out, 'type': 'SPLINES: ' + fn, 'levels': None}
+                            return {'varn': varn, 'knots': knots, 'omit': omit, 'df': df_out, 'type': 'SPLINES: ' + fn,
+                                    'levels': None}
                 else:
                     raise ModelError('DataClass: must have at least 2 knot points')
             else:
@@ -563,7 +565,8 @@ class DataClass(object):
                 self.__implementationSkeleton += [[ccall, None]]
                 for col in df_out['df_out'].columns:
                     self.__implementationSkeleton += [['fn += ' + 'xyz["df_out"]["' + col + '"] * ', col]]
-                return {'varn': varn, 'omit': omit, 'df': df_out['df_out'], 'type': 'CATEGORICAL', 'knots': None, 'levels': df_out['levels']}
+                return {'varn': varn, 'omit': omit, 'df': df_out['df_out'], 'type': 'CATEGORICAL', 'knots': None,
+                        'levels': df_out['levels']}
             else:
                 raise ModelError('DataClass: category not specified correctly: no variable name or missing , or )')
         # none of the above
@@ -598,7 +601,7 @@ class DataClass(object):
             formula = formula[(i + 1):len(formula)]
             if (self.df.columns == yvar).sum() == 0:
                 raise ModelError('DataClass: dependent variable not in DataFrame')
-            self.__y = np.matrix(self.df[yvar].as_matrix()).T  # change to .value
+            self.__y = np.matrix(self.df[yvar].to_numpy()).T  # change to .value
             #
             if self.family == 'BINOMIAL':
                 # check 2 values:
@@ -643,9 +646,10 @@ class DataClass(object):
                     df_out = pd.DataFrame(df_factor['df'])
                 else:
                     df_out = df_out.join(df_factor['df'])
-                self.__factors[df_factor['varn']] = {'type': df_factor['type'], 'knots': df_factor['knots'], 'omit': df_factor['omit'],
+                self.__factors[df_factor['varn']] = {'type': df_factor['type'], 'knots': df_factor['knots'],
+                                                     'omit': df_factor['omit'],
                                                      'levels': df_factor['levels']}
         if df_out is None:
             raise ModelError('DataClass: no factors specified')
-        self.__x = np.matrix(df_out.as_matrix()) # change to .value
+        self.__x = np.matrix(df_out.to_numpy())  # change to .value
         self.__xColumnNames = df_out.columns

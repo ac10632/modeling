@@ -725,7 +725,8 @@ class glm(DataClass):
         d.family = self.family
         d.event = self.event
         d.build_design()
-        p = d.x * np.matrix(self.parameters).T
+        # subset takes care of case where a class variable does not have all the levels that the model was built on
+        p = d.x * np.matrix(self.parameters[d.x_column_names]).T
         if self.family == 'BINOMIAL':
             p = np.exp(p)
             p /= 1.0 + p

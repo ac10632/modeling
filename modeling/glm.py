@@ -859,7 +859,7 @@ class glm(DataClass):
         self.__restriction_coefficients = restriction_coefficients
         self.__restriction_values = restriction_values
     
-    def implement(self, file_name, function_name='model', indent_level=0):
+    def implement(self, file_name, function_name='model', indent_level=0, lang='python'):
         """
         :param file_name: file to create for the implementation
         :type file_name: str
@@ -867,41 +867,126 @@ class glm(DataClass):
         :type function_name: str
         :param indent_level: how much to indent the code at the 'def' level
         :type indent_level: int
-        :return: None
+        :param lang: implementation language (python or sql)
+        :type lang str
+        :return: sql for a query, if lang='sql'
 
 
         """
+        lang = lang.lower()
+        if lang != 'python' and lang != 'sql':
+            raise ModelError('language must be "python" or "sql"')
         try:
             output_file = open(file_name, 'w')
         except FileNotFoundError:
             raise FileNotFoundError('glm: cannot open the file: ' + file_name)
         except FileExistsError:
             raise FileExistsError('glm: cannot open file file for writing: ' + file_name)
+        if lang == 'python':
+            indent = ''
+            for j in range(indent_level): indent += '    '
+            output_file.write(
+                'from modeling.functions import categorical_to_design, linear_splines_basis1, linear_splines_basis2\n')
+            output_file.write('import numpy as np\n')
+            output_file.write(indent + 'def ' + function_name + '(df_in):\n')
+            indent += '    '
+            for (line, factor) in self.implementation_skeleton:
+                if factor is None:
+                    output_file.write(indent + line + '\n')
+                else:
+                    index = self.x_column_names == factor
+                    if index.sum() != 1:
+                        raise ValueError('glm: parameter not found')
+                    if factor.find(':') > 0:
+                        exist_line = 'if "' + factor + '" in xyz["df_out"].columns.values:'
+                        output_file.write(indent + exist_line + '\n')
+                        param = self.parameters[index]
+                        line1 = '    ' + indent + line + str(float(param))
+                        output_file.write(line1 + '\n')
+                    else:
+                        param = self.parameters[index]
+                        line1 = indent + line + str(float(param))
+                        output_file.write(line1 + '\n')
+            if self.family == 'BINOMIAL':
+                output_file.write(indent + 'fn = np.exp(fn)\n')
+                output_file.write(indent + 'fn /= (1+fn)\n')
+            output_file.write(indent + 'return fn\n')
+            output_file.close()
+            return
+        #sql
+        query = ''
         indent = ''
-        for j in range(indent_level): indent += ' '
-        output_file.write(
-            'from modeling.functions import categorical_to_design, linear_splines_basis1, linear_splines_basis2\n')
-        output_file.write('import numpy as np\n')
-        output_file.write(indent + 'def ' + function_name + '(df_in):\n')
-        indent += '    '
+        for j in range(indent_level): indent += '  '
+        plus = ''
         for (line, factor) in self.implementation_skeleton:
             if factor is None:
-                output_file.write(indent + line + '\n')
+                # pull out variable name from statement referencing the DataFrame
+                strt = line.find('"') + 1
+                endr = line.find('"', strt)
+                varn = line[strt:endr]
+                # add it to list of used names. This is used to identify elements in the skeleton that use this
+                # variable (and will be skipped)
+                if line.find('linear_splines_basis2') >= 0:
+                    raise ModelError("Spline basis type 2 not implemented")
+                ln = ''
+                if line.find('categorical_to_design') >= 0:
+                    for j, var_value in enumerate(np.asarray(self.parameters.index)):
+                        if var_value.find(varn) >= 0:
+                            val = var_value[(var_value.find(':')+1):]
+                            ln += indent + plus
+                            plus = '+'
+                            ln += "(cast(" + varn + " AS String) = '" + val + "' ? "
+                            ln += str(self.parameters.iloc[j]) + ' : 0.0) \n'
+                    output_file.write(ln)
+                    query += ln
+                if line.find('linear_splines_basis1') >= 0:
+                    # get list of knots
+                    strt = line.find('[', line.find(']'))
+                    endr = line.find(']', line.find(']') + 1)
+                    knots_str = line[strt + 1:endr]
+                    knots = [float(c) for c in knots_str.split(',')]
+                    param = 0.0
+                    for j, k in enumerate(knots):
+                        ln += indent + plus
+                        plus = '+'
+                        param_name = varn + str(j)
+                        param_old = param
+                        try:
+                            param = self.parameters[param_name]
+                        except:
+                            param = 0.0
+                        if j == 0:
+                            ln += '(' + varn + ' < ' + str(k) + '? 1.0 : 0.0) *'
+                            ln += str(param) + '\n'
+                        else:
+                            km1 = knots[j-1]
+                            ln += '(' + varn + ' < ' + str(k) + ' and ' + varn + ' >= ' + str(km1) + ' ? ('
+                            ln += varn + ' - ' + str(km1) + ') / (' + str(k) + ' - ' + str(km1) + ') : 0.0) *'
+                            ln += str(param) + '\n'
+                            ln += indent + plus
+                            ln += '(' + varn + ' < ' + str(k) + ' and ' + varn + ' >= ' + str(km1) + ' ? ('
+                            ln += str(k) + ' - ' + varn + ') / (' + str(k) + ' - ' + str(km1) + ') : 0.0) *'
+                            ln += str(param_old) + '\n'
+                    ln += indent + plus + '(' + varn + ' >= ' + str(k) + ' ? 1.0 : 0.0) *'
+                    ln += str(param) + '\n'
+                    output_file.write(ln)
+                    query += ln
             else:
-                index = self.x_column_names == factor
-                if index.sum() != 1:
-                    raise ValueError('glm: parameter not found')
-                if factor.find(':') > 0:
-                    exist_line = 'if "' + factor + '" in xyz["df_out"].columns.values:'
-                    output_file.write(indent + exist_line + '\n')
-                    param = self.parameters[index]
-                    line1 = '    ' + indent + line + str(float(param))
-                    output_file.write(line1 + '\n')
-                else:
-                    param = self.parameters[index]
-                    line1 = indent + line + str(float(param))
-                    output_file.write(line1 + '\n')
-        if self.family == 'BINOMIAL':
-            output_file.write(indent + 'fn = np.exp(fn)\n')
-            output_file.write(indent + 'fn /= (1+fn)\n')
-        output_file.write(indent + 'return fn\n')
+                # if 'xyz[' is present then this is a categorical or spline
+                if line.find('xyz[') < 0:
+                    try:
+                        param = self.parameters[factor]
+                    except:
+                        param = 0.0
+                    ln = indent + plus
+                    plus = '+'
+                    if factor != 'intercept':
+                        ln += factor + ' * '
+                    ln += str(param) + '\n'
+                    output_file.write(ln)
+                    query += ln
+        ln = indent + "AS " + function_name + '\n'
+        query += ln
+        output_file.write(ln)
+        output_file.close()
+        return query
